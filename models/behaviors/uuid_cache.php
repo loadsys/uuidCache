@@ -32,7 +32,8 @@ class UuidCacheBehavior extends ModelBehavior {
 	 * @return void
 	 */
 	public function setup(&$model, $config = array()) {
-		$this->settings[$model->alias] = $config;
+		$default = array('enabled' => true);
+		$this->settings[$model->alias] = Set::merge($default, $config);
 		$this->_base = APP.'tmp'.DS.'cache'.DS.$this->_cacheDir.DS;
 	}
 
@@ -49,17 +50,21 @@ class UuidCacheBehavior extends ModelBehavior {
 	 * @return mixed
 	 */
 	public function cache(&$model, $id = null, $file = null, $data = false) {
-		$path = $this->_path($id);
-		$config = $this->_config($model);
-		Cache::set(array('path' => $path));
-		if ($data === false) {
-			$cache = Cache::read($file);
-			if ($cache) {
-				return $cache;
+		if ($this->settings[$model->alias]['enabled']) {
+			$path = $this->_path($id);
+			$config = $this->_config($model);
+			Cache::set(array('path' => $path));
+			if ($data === false) {
+				$cache = Cache::read($file);
+				if ($cache) {
+					return $cache;
+				}
+				return array();
+			} else {
+				return Cache::write($file, $data);
 			}
-			return array();
 		} else {
-			return Cache::write($file, $data);
+			return false;
 		}
 	}
 
