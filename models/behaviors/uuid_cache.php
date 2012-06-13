@@ -3,7 +3,7 @@
  * Uuid Cache Behavior
  *
  * Behavior for making cache calls generic in the model layer. Assumes that the
- * passed in ID is uuid. 
+ * passed in ID is uuid.
  *
  * Things to change:
  *   Different method for handling directory building
@@ -14,13 +14,13 @@ App::import('Core', 'Folder');
 class UuidCacheBehavior extends ModelBehavior {
 
 	public $settings = array();
-	
+
 	public $_base = '';
-	
+
 	public $_config = 'default';
-	
+
 	public $_cacheDir = 'uuid';
-	
+
 	public $_Folder = null;
 
 	/**
@@ -79,7 +79,11 @@ class UuidCacheBehavior extends ModelBehavior {
 		if ($this->_Folder === null) {
 			$this->_Folder = new Folder();
 		}
-		$path = $this->_base . implode(DS, explode('-', $id));
+		if (strpos($id, "-") !== false) {
+			$path = $this->_base . implode(DS, explode('-', $id));
+		} else {
+			$path = $this->_base . implode(DS, str_split($id, 8));
+		}
 		if ($this->_Folder->create($path, 0777)) {
 			return $path;
 		}
